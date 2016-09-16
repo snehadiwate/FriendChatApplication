@@ -1,0 +1,6 @@
+Hi
+
+Your friend <%= @post.user.full_name %> has posted <%= @post.post_text %>
+
+<%= link_to @post.id, post_path(@post) %>
+<a href="<%= @url %>/post/<%= @post.id %>"> View Post </a>

@@ -1,0 +1,166 @@
+    <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+<%= form_for @post, :html => { :multipart => true, :id => "logoupload", :class => "new_logo_upload", 'data-upload-template-id' => "template-upload-logo",
+    'data-download-template-id' => "template-download-logo"} do |f| %>
+    <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+   
+   <div class="form-group">
+      <%= f.label :post_title, :class => 'control-label col-lg-2' %>
+      <div class="col-lg-10">
+        <%= f.text_area :post_title, :class => 'form-control' %>
+      </div>
+      <%=f.error_span(:post_title) %>
+    </div>
+
+    <div class="form-group">
+    <%= f.label :post_text, :class => 'control-label col-lg-2' %>
+    <div class="col-lg-10">
+      <%= f.text_area :post_text, :class => 'form-control' %>
+    </div>
+    <%=f.error_span(:post_text) %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :visible, :class => 'control-label col-lg-2' %>
+    <div class="col-lg-10">
+      <%= f.radio_button :visible, 1, :checked => true %>
+      <%= label :freinds, 'freinds' %>
+      <%= f.radio_button :visible, 0 %>
+      <%= label :public, 'public' %>
+    </div>
+
+    <%=f.error_span(:visible) %>
+  </div>
+
+    <div class="fileupload-buttonbar">
+      <div class="fileupload-buttons">
+        <!-- The fileinput-button span is used to style the file input field as button -->
+        
+        <div class="row">
+          <div class="row col-sm-10 col-md-10 col-xs-8">
+            <label>Upload Logo</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="row col-sm-10 col-md-10 col-xs-8">
+            <%= f.file_field :upload, :class => "upload_new_logo", :id => "newLogoUpload"  , :style => "width: auto;"%>
+           </div>
+        </div>
+                
+        <span class="fileupload-process"></span>
+      </div>
+      <!-- The global progress state -->
+      <div class="fileupload-progress fade" style="display:none">
+          <!-- The global progress bar -->
+          <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+          <!-- The extended global progress state -->
+          <div class="progress-extended">&nbsp;</div>
+      </div>
+    </div>
+    <!-- The table listing the files available for upload/download -->
+    <div class="row col-sm-12">
+        <table role="presentation"><tbody class="files"></tbody></table>
+    </div> 
+    
+     <div class="form-group">
+    <div class="col-lg-offset-2 col-lg-10">
+      <%= f.submit nil, :class => 'btn btn-primary' %>
+      <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+                posts_path, :class => 'btn btn-default' %>
+    </div>
+  </div>   
+  <% end %>
+
+<script>
+  var fileUploadErrors = {
+  maxFileSize: 'File is too big',
+  minFileSize: 'File is too small',
+  acceptFileTypes: 'Filetype not allowed',
+  maxNumberOfFiles: 'Max number of files exceeded',
+  uploadedBytes: 'Uploaded bytes exceed file size',
+  emptyResult: 'Empty file upload result'
+  };
+</script>
+
+<!-- The template to display files available for upload -->
+<script id="template-upload-logo" type="text/x-tmpl">
+  {% for (var i=0, file; file=o.files[i]; i++) { %}
+  <tr class="template-upload fade">
+    <td class="preview"><span class="fade"></span></td>
+    <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
+    {% if (file.error) { %}
+    <td class="error" colspan="2"><span class="label label-danger">{%=locale.fileupload.error%}</span> {%=locale.fileupload.errors[file.error] || file.error%}</td>
+    {% } else if (o.files.valid && !i) { %}
+    <td>
+      <div class="progress progress-success progress-striped active"><div class="bar" style="width:0%;"></div></div>
+    </td>
+    <td class="start">{% if (!o.options.autoUpload) { %}
+      <button class="btn btn-sm btn-primary">
+        <i class="glyphicon glyphicon-upload"></i>
+        <span>{%=locale.fileupload.start%}</span>
+      </button>
+      {% } %}</td>
+    {% } else { %}
+    <td colspan="2"></td>
+    {% } %}
+    <td class="cancel">{% if (!i) { %}
+      <button class="btn btn-sm btn-warning">
+        <i class="glyphicon glyphicon-ban-circle"></i>
+        <span>{%=locale.fileupload.cancel%}</span>
+      </button>
+      {% } %}</td>
+  </tr>
+  {% } %}
+</script>
+<!-- The template to display files available for download -->
+<script id="template-download-logo" type="text/x-tmpl">
+  {% for (var i=0, file; file=o.files[i]; i++) { %}
+    <tr class="template-download fade">
+      {% if (file.error) { %}
+        <td></td>
+        <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
+        <td class="error" colspan="2"><span class="label label-danger">{%=locale.fileupload.error%}</span> {%=locale.fileupload.errors[file.error] || file.error%}</td>
+        {% } else { %}
+        <td class="preview">{% if (file.thumbnail_url) { %}
+          <a href="{%=file.url%}" title="{%=file.name%}" rel="gallery" download="{%=file.name%}"><img src="{%=file.thumbnail_url%}"></a>
+          {% } %}</td>
+        <td class="name">
+          <a href="{%=file.url%}" title="{%=file.name%}" rel="{%=file.thumbnail_url&&'gallery'%}" download="{%=file.name%}">
+            
+            <div id="myDiv">
+              <img alt="Client Logo" title="Logo" src="{%=file.url%}" />
+            </div>
+        </td>
+        <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
+        <td colspan="2"></td>
+        {% } %}
+      </tr>
+    {% } %}
+</script>
+<script type="text/javascript" charset="utf-8">
+$(function () {
+  // Initialize the jQuery File Upload widget:
+  //$('#fileupload').fileupload();
+  // 
+  $('#logoupload').each(function () {
+    $(this).fileupload({
+        dropZone: $(this)
+    });
+  });
+  // Load existing files:
+  $.getJSON($('#logoupload').prop('action'), function (files) {
+    var fu = $('#logoupload').data('blueimpFileupload'), 
+      template;
+    fu._adjustMaxNumberOfFiles(-files.length);
+    template = fu._renderDownload(files)
+      //.appendTo($('#invoicefileupload .files'));
+    $('#logoupload .files').html(fu._renderDownload(files));
+    // Force reflow:
+    fu._reflow = fu._transition && template.length &&
+      template[0].offsetWidth;
+    template.addClass('in');
+    $(".template-download").addClass('in');
+    $('#loading').remove();
+    
+  });
+});
+  </script>

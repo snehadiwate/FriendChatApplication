@@ -1,0 +1,106 @@
+
+<div class="col-lg-9">
+  <%= link_to 'New Post', new_post_path, :class =>  'btn btn-primary' %>
+  <div class="col-lg-8">
+    <h3><%= @post.user.full_name %></h3>
+    <%= link_to "#{@post.post_title}", post_path(@post) %>
+    <!-- Date/Time -->
+    <p><span class="glyphicon glyphicon-time"></span> <%= @post.created_at.strftime('%A, %d %b %Y %l:%M %p')  %></p>
+    <!-- Preview Image -->
+    <img class="img-responsive" src="http://placehold.it/900x300" alt="">
+
+    <!-- Post Content -->
+    <p class="lead">
+      <%= @post.post_text %>
+    </p>
+    <hr>
+    <!-- Comments Form -->
+    <div class="well">
+      <h4>Leave a Comment:</h4>
+      <div class="post_comment">
+        <% if @post.comments.present? %>
+            <% @post.comments.each do|comment| %>
+                <div class="large-12 columns comm-blog">
+                  <p class="text-info"><span class="bold"><span style="margin-right: 5px"><%= comment.user.full_name rescue '' %> </span></span> </p>
+                  <p><%= comment.content %></p>
+                </div>
+            <% end %>
+        <% end %>
+      </div>
+      <div class="large-12 columns comm-blog">
+        <div class="comment_eroor">
+          <textarea class="form-control" rows="5" id="comment"></textarea>
+        </div>
+        <button class="btn primary-button", onclick="saveComment()"><%=t('Add_Comment')%></button>
+      </div>
+    </div>
+
+
+    <hr>
+
+  </div>
+</div>
+<div class="col-lg-3">
+  <div class="well sidebar-nav">
+    <h3>Freind List</h3>
+    <ul class="nav nav-list">
+      <% @user.each do |user| %>
+          <% if current_user != user %>
+              <% unless current_user.pending_friends.to_ary.include? user %>
+                  <% unless current_user.requested_friends.to_ary.include? user  %>
+                      <% unless current_user.friends.to_ary.include? user  %>
+                          <li><%= image_tag user.image.url, :height=> '15', width: '15' %> <%= user.full_name %>
+                            <%= link_to "Add Friend", {:controller => "home", :action => "add_friend", :id => user.id} %></li>
+                      <% end %>
+                  <% end %>
+              <% end %>
+          <% end %>
+
+      <% end %>
+    </ul>
+
+    <h3>Wait Freind List</h3>
+    <ul class="nav nav-list">
+      <% current_user.requested_friends.each do |user| %>
+          <% if current_user != user %>
+              <li><%= image_tag user.image.url, :height=> '15', width: '15' %> <%= user.full_name %>
+                <%= link_to "Accept Friend", {:controller => "home", :action => "accept_friend", :id => user.id} %></li>
+          <% end %>
+
+      <% end %>
+    </ul>
+  </div><!--/.well -->
+</div><!--/span-->
+
+<script>
+    function saveComment()
+    {
+        if ($("#comment").val()== '')
+        {
+            $('.comment_eroor').find('.form-error').remove()
+            $('.comment_eroor').append('<div class="form-error" style="color: red">Please Specify Comment</div>')
+        }
+        else {
+            var commentValue = $("#comment").val();
+            var post_id = <%= @post.id %>
+                    $.ajax({
+                        type: "POST",
+                        url: "/posts/save_comment",
+                        data: {post: {comment: commentValue, post_id: post_id}},
+                        success: function (data) {
+                            console.log(data)
+                            $('#comment').val('');
+                            var comment__div = '<div class="large-12 columns comm-blog">';
+                            comment__div += '<p class="text-info"><span class="bold">' +data.user +'</span></p>';
+                            comment__div +=  '<p>'+data.comment.content+'</p><h6>';
+                            $('.post_comment').append(comment__div);
+                        },
+                        error: function(data, errorThrown){
+                            console.log(data.comment_error)
+                            $('.comment_eroor').find('.form-error').remove()
+                            $('.comment_eroor').append(data.responseJSON.comment_error)
+                        }
+                    });
+        }
+    }
+</script>

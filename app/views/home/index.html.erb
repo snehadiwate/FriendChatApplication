@@ -1,0 +1,161 @@
+<div class="col-lg-9">
+  <%= link_to 'New Post', new_post_path, :class =>  'btn btn-primary' %>
+  <% @posts.each do |post| %>
+      <div class="col-lg-12">
+        <% if post.visible? %>
+            <% if  current_user.friends.to_ary.include? post.user %>
+                <h3><%= post.user.full_name %></h3>
+                <%= link_to "#{post.post_title}", post_path(post) %>
+                <!-- Date/Time -->
+                <p><span class="glyphicon glyphicon-time"></span> <%= time_ago_in_words(post.created_at) + " " + "ago"  %></p>
+                <!-- Preview Image -->
+                <img class="img-responsive" src="http://placehold.it/900x300" alt="">
+
+                <!-- Post Content -->
+                <p class="lead">
+                  <%= post.post_text %>
+                </p>
+                <hr>                
+            <% elsif current_user == post.user %>
+                <h3><%= post.user.full_name %></h3>
+                <%= link_to "#{post.post_title}", post_path(post) %>
+                <!-- Date/Time -->
+                <p><span class="glyphicon glyphicon-time"></span> <%= time_ago_in_words(post.created_at) + " " + "ago"  %></p>
+
+                <!-- Preview Image -->
+                <img class="img-responsive" src="http://placehold.it/600x300" alt="">
+
+
+                <!-- Post Content -->
+                <p class="lead">
+                  <%= post.post_text %>
+                </p>
+                
+            <% end %>
+            <% if post.comments.present? %>
+                  <div><h4> Comments</h4></div>
+                  <% post.comments.order("created_at asc").each do |post_comment| %>
+                   <div class="row">                     
+                      <div class="col-sm-12">                       
+                          <div class="panel-heading">
+                            <strong><%= post_comment.user.full_name %></strong> <span class="text-muted"><%= time_ago_in_words(post_comment.created_at) + " " + "ago"  %></span>
+                            <% if current_user == post_comment.user %>
+                              <span class="pull-right"><%= link_to "Edit", edit_comment_path(post_comment.id) %>&nbsp;&nbsp;<%=link_to "Delete", comment_path(post_comment), :method => :delete  %></span>
+                            <% end %>
+                          </div>
+                          <div style="margin-left: 20px; padding-top: -1px;">
+                            <%= post_comment.content %>
+                          </div><!-- /panel-body -->
+                         <!-- /panel panel-default -->
+                      </div><!-- /col-sm-12 -->
+                    </div>
+                  <% end %>  
+                <% end %>
+                
+                <div class="row"> 
+                  <div id="newComments_<%= post.id %>">
+                    <!-- dynamically add comment here when post new comment -->
+                  </div> 
+                </div> 
+                
+                <!-- Comments Form -->
+                <div class="well well-sm">
+                  <h4>Leave a Comment:</h4>
+                  <%= form_for "comment", :url => "/comments" , :html => { :class => 'form-horizontal',:id =>"postCommentForm"} do |f| %>
+                    <div class="form-group col-sm-12">
+                      <%= f.text_area :content ,  :rows => "2", :class => "form-control"%>
+                      <%= f.hidden_field :post_id, :value => post.id %>
+                      <%= f.hidden_field :user_id, :value => current_user.id %>
+                    </div>  
+                    <%= f.button :submit, :id =>"Commentsubmit" , :class =>"btn btn-primary"%>
+                  <% end %>
+                </div>
+                <hr>
+
+        <% else %>
+            <h3><%= post.user.full_name %></h3>
+
+            <%= link_to "#{post.post_title}", post_path(post) %>
+            <!-- Date/Time -->
+            <p><span class="glyphicon glyphicon-time"></span> <%= post.created_at.strftime('%A, %d %b %Y %l:%M %p')  %></p>
+
+
+            <!-- Preview Image -->
+            <img class="img-responsive" src="http://placehold.it/300x300" alt="">
+
+            <!-- Post Content -->
+            <p class="lead">
+              <%= post.post_text %>
+            </p>
+
+
+            <!-- Comments Form -->
+            <div class="well">
+                <h4>Leave a Comment:</h4>
+                <%= form_for "comment", :url => "/comments" , :html => { :class => 'form-horizontal',:id =>"postCommentForm"} do |f| %>
+                  <div class="form-group">
+                    <%= f.text_area :content ,  :rows => "3"%>
+                    <%= f.hidden_field :post_id, :value => post.id %>
+                    <%= f.hidden_field :user_id, :value => post.user.id %>
+                  </div>  
+                  <%= f.button :submit, :id =>"Commentsubmit" , :class =>"btn btn-primary"%>
+                <% end %>
+              </div>
+            <hr>
+
+
+        <% end %>
+      </div>
+  <% end %>
+</div>
+<div class="col-lg-3">
+  <div class="well sidebar-nav">
+    <h3>Menu</h3>
+    <hr>
+    <h5>Freind List</h5>
+    <ul class="nav nav-list">
+      <% @user.each do |user| %>
+          <% if current_user != user %>
+              <% unless current_user.pending_friends.to_ary.include? user %>
+                  <% unless current_user.requested_friends.to_ary.include? user  %>
+                      <% unless current_user.friends.to_ary.include? user  %>
+                          <li><%= image_tag user.image.url, :height=> '15', width: '15' %> <%= user.full_name %>
+                            <%= link_to "Add Friend", {:controller => "home", :action => "add_friend", :id => user.id} %></li>
+                      <% end %>
+                  <% end %>
+              <% end %>
+          <% end %>
+
+      <% end %>
+    </ul>
+
+    <h5>Freind Request <label class="label label-danger"><%= current_user.requested_friends.count %></label></h5>
+    <ul class="nav nav-list">
+      <% current_user.requested_friends.each do |user| %>
+          <% if current_user != user %>
+              <li><%= image_tag user.image.url, :height=> '15', width: '15' %> <%= user.full_name %>
+                <%= link_to "Accept Friend", {:controller => "home", :action => "accept_friend", :id => user.id} %></li>
+          <% end %>
+
+      <% end %>
+    </ul>
+  </div><!--/.well -->
+</div><!--/span-->
+
+<script type="text/javascript">
+  $("#Commentsubmit").click(function(event){
+     event.preventDefault();
+     var valuesToSubmit = $("#postCommentForm").serialize();
+     var postId = $("#comment_post_id").val();
+        $.ajax({
+            url: "/comments.json", //sumbits it to the given url of the form
+            data: valuesToSubmit,
+            type: "post",
+            dataType: "JSON" // you want a difference between normal and ajax-calls, and json is standard
+        }).success(function(json){
+            $("#newComments_"+postId).html('<div class="col-sm-12"><div class="panel-heading"><strong>'+ json["user_name"]
+            + '</strong></div><div style="margin-left: 20px; padding-top: -1px;">' + json["content"] + '</div></div></div>')
+            $("#comment_content").val(" ");        
+        });
+  });
+</script>
